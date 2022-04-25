@@ -2,7 +2,6 @@ import pytorch_lightning as pl
 # import pandas as pd
 import torch
 import torchmetrics
-from segmentation_models_pytorch import Unet
 from fastai.vision.learner import create_unet_model
 from fastai.vision.models import resnet34
 

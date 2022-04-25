@@ -14,7 +14,7 @@ dataset created by [`image_generator`](https://github.com/piotrmarciniak1998/ima
 Scripts:
 * `create_dataset.py` - the script takes `.zip` directories of smaller datasets to join them together. The datasets 
   should be placed inside `depth_predictor/input_dataset`. The final dataset should be located in `dataset` directory 
-  with `input` and `output` directories inside.
+  with `input` and `ground_truth` directories inside.
 
 Neural network models:
 * `basic_model` - first test of neural network based on `resnet34`.

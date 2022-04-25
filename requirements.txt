@@ -1,7 +1,8 @@
 pytorch-lightning==1.5.9
+torch
+torchmetrics
 numpy
 opencv-python
 albumentations
-opencv-python
 segmentation-models-pytorch
 fastai
