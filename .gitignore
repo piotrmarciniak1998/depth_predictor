@@ -2,3 +2,4 @@ input_dataset/
 dataset/
 temp/
 venv/
+checkpoints/

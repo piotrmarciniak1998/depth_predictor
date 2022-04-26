@@ -15,13 +15,13 @@ class BasicModel(pl.LightningModule):
         self.loss_function = torch.nn.MSELoss()
 
         metrics = torchmetrics.MetricCollection([
-            torchmetrics.Precision(num_classes=4, average='macro', mdmc_average='samplewise'),
-            torchmetrics.Recall(num_classes=4, average='macro', mdmc_average='samplewise'),
-            torchmetrics.F1Score(num_classes=4, average='macro', mdmc_average='samplewise'),
-            torchmetrics.Accuracy(num_classes=4, average='macro', mdmc_average='samplewise')
+            torchmetrics.Precision(num_classes=4, average="macro", mdmc_average="samplewise"),
+            torchmetrics.Recall(num_classes=4, average="macro", mdmc_average="samplewise"),
+            torchmetrics.F1Score(num_classes=4, average="macro", mdmc_average="samplewise"),
+            torchmetrics.Accuracy(num_classes=4, average="macro", mdmc_average="samplewise")
         ])
-        self.train_metrics = metrics.clone('train_')
-        self.val_metrics = metrics.clone('val_')
+        self.train_metrics = metrics.clone("train_")
+        self.val_metrics = metrics.clone("val_")
 
     def forward(self, x):
         x = x.type(torch.float32)
@@ -32,7 +32,7 @@ class BasicModel(pl.LightningModule):
         output_image = self(input)
 
         loss = self.loss_function(output_image, ground_truth)
-        self.log('train_loss', loss)
+        self.log("train_loss", loss)
 
         # output_image = torch.softmax(output_image, dim=1)
         # self.log_dict(self.train_metrics(output_image, ground_truth))
@@ -44,7 +44,7 @@ class BasicModel(pl.LightningModule):
         output_image = self(input)
 
         loss = self.loss_function(output_image, ground_truth)
-        self.log('val_loss', loss, prog_bar=True)
+        self.log("val_loss", loss, prog_bar=True)
 
         # output_image = torch.softmax(output_image, dim=1)
         # self.log_dict(self.train_metrics(output_image, ground_truth))

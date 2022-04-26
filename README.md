@@ -5,10 +5,9 @@ a new depth image (output). Currently, the only expected target is a selected mu
 dataset created by [`image_generator`](https://github.com/piotrmarciniak1998/image_generator). 
 
 # ⚒️ TODO
-1. Add a script that uses created model and dataset to teach the neural network model.
-2. Create new neural network models.
-3. Tweak models' parameters.
-4. Check if adding rgb images to input can improve results.
+1. Create new neural network models.
+2. Tweak models' parameters.
+3. Check if adding rgb images to input can improve results.
 
 # 💻 Components
 Scripts:

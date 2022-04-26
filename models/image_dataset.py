@@ -1,7 +1,7 @@
 import math
 import torch
 import cv2
-import albumentations
+import albumentations.pytorch
 import numpy as np
 from pathlib import Path
 from typing import List
