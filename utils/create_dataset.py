@@ -5,8 +5,7 @@ import zipfile
 
 USE_RGB = False
 DELETE_TEMP = True
-# OCCLUSION_BOUNDS = [(1, 20), (1, 40), (1, 60), (1, 80), (1, 99)]
-OCCLUSION_BOUNDS = [(1, 20)]
+OCCLUSION_BOUNDS = [(1, 20), (1, 40), (1, 60), (1, 80), (1, 99)]
 
 for occlusion_bound in OCCLUSION_BOUNDS:
     abs_path = os.path.abspath("./")

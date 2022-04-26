@@ -47,7 +47,7 @@ class ImageDataset(torch.utils.data.Dataset):
         else:
             transformed = self.transforms(image=input_image, mask=output_image)
 
-        transformed_input = transformed["input"].type(torch.float32)
+        transformed_input = transformed["image"].type(torch.float32)
         transformed_output = transformed["mask"].type(torch.float32)
 
         return transformed_input, transformed_output

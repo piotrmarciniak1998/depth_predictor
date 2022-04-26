@@ -29,7 +29,7 @@ class BasicModel(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         input_image, ground_truth = batch
-        output_image = self(input)
+        output_image = self(input_image)
 
         loss = self.loss_function(output_image, ground_truth)
         self.log("train_loss", loss)
@@ -41,7 +41,7 @@ class BasicModel(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         input_image, ground_truth = batch
-        output_image = self(input)
+        output_image = self(input_image)
 
         loss = self.loss_function(output_image, ground_truth)
         self.log("val_loss", loss, prog_bar=True)
