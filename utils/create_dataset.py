@@ -5,7 +5,8 @@ import zipfile
 
 USE_RGB = False
 DELETE_TEMP = True
-OCCLUSION_BOUNDS = [(1, 20), (1, 40), (1, 60), (1, 80), (1, 99)]
+# OCCLUSION_BOUNDS = [(1, 20), (1, 40), (1, 60), (1, 80), (1, 99)]
+OCCLUSION_BOUNDS = [(1, 20)]
 
 for occlusion_bound in OCCLUSION_BOUNDS:
     abs_path = os.path.abspath("./")
@@ -65,6 +66,10 @@ for occlusion_bound in OCCLUSION_BOUNDS:
             elif file_type == "rgb" and not USE_RGB:
                 continue
 
+            if last_index != file_index:
+                global_index += 1
+                last_index = file_index
+
             new_file_name = f"{global_index}_{file_type}_{file_occlusion}.png"
 
             if file_content == "o":
@@ -76,10 +81,6 @@ for occlusion_bound in OCCLUSION_BOUNDS:
 
             shutil.move(file_path, new_file_path)
             os.rename(f"{new_file_path}/{file}", f"{new_file_path}/{new_file_name}")
-
-            if last_index != file_index:
-                global_index += 1
-                last_index = file_index
 
         all_files += len(files)
 

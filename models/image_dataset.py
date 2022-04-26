@@ -43,12 +43,12 @@ class ImageDataset(torch.utils.data.Dataset):
         output_image = cv2.imread(str(output_path))
 
         if self._augment:
-            transformed = self.augmentations(input=input_image, output=output_image)
+            transformed = self.augmentations(image=input_image, mask=output_image)
         else:
-            transformed = self.transforms(input=input_image, output=output_image)
+            transformed = self.transforms(image=input_image, mask=output_image)
 
         transformed_input = transformed["input"].type(torch.float32)
-        transformed_output = transformed["output"].type(torch.float32)
+        transformed_output = transformed["mask"].type(torch.float32)
 
         return transformed_input, transformed_output
 
