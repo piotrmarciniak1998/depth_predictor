@@ -15,10 +15,10 @@ MAX_EPOCHS = 100
 
 
 def training():
-    abs_path = os.path.abspath("../")
+    abs_path = os.path.abspath("./")
     dataset_path = f"{abs_path}/dataset/{DATASET}"
-    dataset_ground_truth_path = f"{dataset_path}/ground_truth/"
-    dataset_input_path = f"{dataset_path}/input/"
+    dataset_ground_truth_path = f"{dataset_path}/ground_truth"
+    dataset_input_path = f"{dataset_path}/input"
 
     train_names = sorted([path.name for path in Path(dataset_ground_truth_path).iterdir()])
     train_names, val_names = train_test_split(train_names, test_size=VAL_SIZE + TEST_SIZE, random_state=42)
