@@ -9,19 +9,20 @@ from fastai.vision.models import resnet34
 class BasicModel(pl.LightningModule):
     def __init__(self):
         super().__init__()
+        self.img_size = (240, 320)
         encoder_model = resnet34
-        model = create_unet_model(encoder_model, n_out=3, img_size=(480, 640), n_in=3)
+        model = create_unet_model(encoder_model, n_out=3, img_size=self.img_size, n_in=3)
         self.network = model
         self.loss_function = torch.nn.MSELoss()
 
-        metrics = torchmetrics.MetricCollection([
-            torchmetrics.Precision(num_classes=4, average="macro", mdmc_average="samplewise"),
-            torchmetrics.Recall(num_classes=4, average="macro", mdmc_average="samplewise"),
-            torchmetrics.F1Score(num_classes=4, average="macro", mdmc_average="samplewise"),
-            torchmetrics.Accuracy(num_classes=4, average="macro", mdmc_average="samplewise")
-        ])
-        self.train_metrics = metrics.clone("train_")
-        self.val_metrics = metrics.clone("val_")
+        # metrics = torchmetrics.MetricCollection([
+        #     torchmetrics.Precision(num_classes=4, average="macro", mdmc_average="samplewise"),
+        #     torchmetrics.Recall(num_classes=4, average="macro", mdmc_average="samplewise"),
+        #     torchmetrics.F1Score(num_classes=4, average="macro", mdmc_average="samplewise"),
+        #     torchmetrics.Accuracy(num_classes=4, average="macro", mdmc_average="samplewise")
+        # ])
+        # self.train_metrics = metrics.clone("train_")
+        # self.val_metrics = metrics.clone("val_")
 
     def forward(self, x):
         x = x.type(torch.float32)

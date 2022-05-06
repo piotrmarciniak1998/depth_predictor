@@ -13,7 +13,7 @@ class ImageDataset(torch.utils.data.Dataset):
         self._input_dir = f"{path}/input"
         self._output_dir = f"{path}/ground_truth"
         self._augment = augment
-        self.image_size = (480, 640)
+        self.image_size = (240, 320)
         self.padded_image_size = (
             math.ceil(self.image_size[0] / 32) * 32,
             math.ceil(self.image_size[1] / 32) * 32
@@ -22,7 +22,7 @@ class ImageDataset(torch.utils.data.Dataset):
         self.transforms = albumentations.Compose([
             albumentations.Resize(*self.image_size),
             albumentations.PadIfNeeded(*self.padded_image_size),
-            albumentations.ToFloat(max_value=255),
+            albumentations.ToFloat(),
             albumentations.pytorch.transforms.ToTensorV2()
         ])
 
@@ -31,7 +31,7 @@ class ImageDataset(torch.utils.data.Dataset):
             albumentations.PadIfNeeded(*self.padded_image_size),
             albumentations.HorizontalFlip(),
             albumentations.Affine(scale=(0.95, 1.05), rotate=(-10, 10)),
-            albumentations.ToFloat(max_value=255),
+            albumentations.ToFloat(),
             albumentations.pytorch.transforms.ToTensorV2()
         ])
 
