@@ -5,9 +5,10 @@ import zipfile
 import numpy as np
 
 
-USE_RGB = False
+CREATE_TEMP = True
 DELETE_TEMP = True
-MAKE_CIRCLE = True
+CREATE_RGB = False
+CREATE_CIRCLE = True
 CIRCLE_SIZE = 125
 OCCLUSION_BOUNDS = [(1, 20), (1, 40), (1, 60), (1, 80), (1, 99)]
 
@@ -15,20 +16,20 @@ abs_path = os.path.abspath("./")
 input_dataset_path = f"{abs_path}/input_dataset"
 temp_path = f"{abs_path}/temp"
 
-if DELETE_TEMP:
+if CREATE_TEMP:
     try:
-        shutil.rmtree(f"{abs_path}/temp")
+        shutil.rmtree(temp_path)
     except FileNotFoundError:
         pass
 
-os.makedirs(f"{temp_path}", exist_ok=True)
+    os.makedirs(temp_path, exist_ok=True)
 
-files = [f for f in os.listdir(input_dataset_path) if os.path.isfile(os.path.join(input_dataset_path, f))]
+    files = [f for f in os.listdir(input_dataset_path) if os.path.isfile(os.path.join(input_dataset_path, f))]
 
-for i, file in enumerate(files):
-    with zipfile.ZipFile(f"{input_dataset_path}/{file}", 'r') as zip_ref:
-        print(f"[{i + 1}/{len(files)}] unzipping {file}.")
-        zip_ref.extractall(f"{temp_path}")
+    for i, file in enumerate(files):
+        with zipfile.ZipFile(f"{input_dataset_path}/{file}", 'r') as zip_ref:
+            print(f"[{i + 1}/{len(files)}] unzipping {file}.")
+            zip_ref.extractall(temp_path)
 
 for occlusion_bound in OCCLUSION_BOUNDS:
     print(f"Started with occlusion bound set as {occlusion_bound}.")
@@ -41,7 +42,13 @@ for occlusion_bound in OCCLUSION_BOUNDS:
 
     os.makedirs(f"{dataset_path}/input", exist_ok=True)
     os.makedirs(f"{dataset_path}/ground_truth", exist_ok=True)
-    if MAKE_CIRCLE:
+
+    if CREATE_CIRCLE:
+        try:
+            shutil.rmtree(f"{dataset_path}_circle")
+        except FileNotFoundError:
+            pass
+
         os.makedirs(f"{dataset_path}_circle/input", exist_ok=True)
         os.makedirs(f"{dataset_path}_circle/ground_truth", exist_ok=True)
 
@@ -50,16 +57,7 @@ for occlusion_bound in OCCLUSION_BOUNDS:
     all_files = 1
 
     for root, dirs, files in os.walk(temp_path):
-        if USE_RGB:
-            print(f"{global_index} pairs ready. \t"
-                  f"{int(round(len(files) / 2, 0))} pairs in current directory to check. \t"
-                  f"{int(round(100 * global_index * 4 / all_files, 0))}% of files are used.")
-        else:
-            print(f"{global_index} pairs ready. \t"
-                  f"{int(round(len(files) / 2, 0))} pairs in current directory to check. \t"
-                  f"{int(round(100 * global_index * 2 / all_files, 0))}% of files are used.")
-
-        for file in files:
+        for i, file in enumerate(files):
             file_path = os.path.join(root, file)
             file_info = file.rstrip(".png").split("_")
             file_index = int(file_info[0])
@@ -69,11 +67,13 @@ for occlusion_bound in OCCLUSION_BOUNDS:
             file_camera_x = int(file_info[4])
             file_camera_y = int(file_info[5])
 
+            print(f"\t[{i + 1}/{len(files)}] \t{file_path}")
+
             if not occlusion_bound[0] <= file_occlusion <= occlusion_bound[1]:
                 continue
             elif not os.path.isfile(file_path):
                 continue
-            elif file_type == "rgb" and not USE_RGB:
+            elif file_type == "rgb" and not CREATE_RGB:
                 continue
 
             if last_index != file_index:
@@ -94,7 +94,7 @@ for occlusion_bound in OCCLUSION_BOUNDS:
             shutil.copy(file_path, new_file_path)
             os.rename(f"{new_file_path}/{file}", f"{new_file_path}/{new_file_name}")
 
-            if MAKE_CIRCLE:
+            if CREATE_CIRCLE:
                 if file_content == "o":
                     new_file_path = f"{dataset_path}_circle/input/"
                     shutil.copy(file_path, new_file_path)
