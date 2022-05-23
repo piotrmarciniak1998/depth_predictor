@@ -8,32 +8,31 @@ from random import sample
 from models.basic_model import BasicModel
 
 
-DATASET = "1_20"
-NUMBER_OF_PREDICTIONS = 100
-RANDOMIZE = True
+DATASET = "1_60"
+NUMBER_OF_PREDICTIONS = 1500
+RANDOMIZE = False
 
 
 def predict():
     abs_path = os.path.abspath("../")
-    dataset_path = f"{abs_path}/dataset/{DATASET}"
+    dataset_path = f"{abs_path}/test_dataset/{DATASET}"
     dataset_ground_truth_path = f"{dataset_path}/ground_truth"
     dataset_input_path = f"{dataset_path}/input"
-    predictions_output_path = f"{abs_path}/predictions"
+    predictions_output_path = f"{abs_path}/predictions1-60"
     os.makedirs(predictions_output_path, exist_ok=True)
 
     input_transforms = albumentations.Compose([
-            albumentations.Resize(480, 640),
-            albumentations.ToFloat(max_value=255),
+            albumentations.Resize(240, 320),
+            albumentations.ToFloat(),
             albumentations.pytorch.transforms.ToTensorV2()
         ])
     output_transforms = albumentations.Compose([
-        albumentations.CenterCrop(480, 640),
-        albumentations.Resize(480, 640, interpolation=cv2.INTER_NEAREST)
+        albumentations.CenterCrop(240, 320),
+        albumentations.Resize(2400, 320, interpolation=cv2.INTER_NEAREST)
     ])
 
     device = torch.device('cuda')
-    model_checkpoint = pl.callbacks.ModelCheckpoint(dirpath=f"{abs_path}/checkpoints")
-    model = BasicModel.load_from_checkpoint(model_checkpoint.best_model_path).to(
+    model = BasicModel.load_from_checkpoint(f"{abs_path}/checkpoints/epoch=8-step=44333.ckpt").to(
         device)  # wczytanie najlepszych wag z treningu
     model = model.eval()
 
@@ -45,15 +44,19 @@ def predict():
     if RANDOMIZE:
         input_names = sample(all_names, NUMBER_OF_PREDICTIONS)
     else:
-        input_names = all_names[:100]
+        input_names = all_names[:NUMBER_OF_PREDICTIONS]
 
     for image_name in input_names:
-        image = cv2.imread(f"{dataset_input_path}/{image_name}")
-        image = input_transforms(image=image)['image'][None, ...]
-        with torch.no_grad():
-            prediction = model(image.to(device)).cpu().squeeze().numpy()
 
-        cv2.imwrite(f"{predictions_output_path}/{image_name}", prediction)
+        file_info = image_name.rstrip(".png").split("_")
+        file_type = file_info[1]
+        if file_type == 'depth':
+            image = cv2.imread(f"{dataset_input_path}/{image_name}")
+            image = input_transforms(image=image)['image'][None, ...]
+            with torch.no_grad():
+                prediction = model(image.to(device)).cpu().squeeze().numpy()
+
+            cv2.imwrite(f"{predictions_output_path}/{image_name}", prediction)
 
 
 if __name__ == '__main__':
