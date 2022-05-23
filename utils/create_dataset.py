@@ -7,7 +7,7 @@ import numpy as np
 
 CREATE_TEMP = True
 DELETE_TEMP = True
-CREATE_RGB = False
+CREATE_RGB = True
 CREATE_CIRCLE = True
 CIRCLE_SIZE = 125
 OCCLUSION_BOUNDS = [(1, 20), (1, 40), (1, 60), (1, 80), (1, 99)]
@@ -33,7 +33,8 @@ if CREATE_TEMP:
 
 for occlusion_bound in OCCLUSION_BOUNDS:
     print(f"Started with occlusion bound set as {occlusion_bound}.")
-    dataset_path = f"{abs_path}/dataset/{occlusion_bound[0]}_{occlusion_bound[1]}"
+    # dataset_path = f"{abs_path}/dataset/{occlusion_bound[0]}_{occlusion_bound[1]}"
+    dataset_path = f"D:/dataset/{occlusion_bound[0]}_{occlusion_bound[1]}"
 
     try:
         shutil.rmtree(dataset_path)
