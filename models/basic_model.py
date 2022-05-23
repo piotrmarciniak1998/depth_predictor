@@ -13,8 +13,8 @@ class BasicModel(pl.LightningModule):
         encoder_model = resnet34
         model = create_unet_model(encoder_model, n_out=3, img_size=self.img_size, n_in=3)
         self.network = model
-        self.loss_function = torch.nn.MSELoss()
-
+        self.loss_function = torch.nn.L1Loss()
+#MAE SSIM
         # metrics = torchmetrics.MetricCollection([
         #     torchmetrics.Precision(num_classes=4, average="macro", mdmc_average="samplewise"),
         #     torchmetrics.Recall(num_classes=4, average="macro", mdmc_average="samplewise"),
