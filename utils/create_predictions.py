@@ -37,12 +37,13 @@ def predict():
     model = BasicModel.load_from_checkpoint(model_path).to(device)
     model = model.eval()
 
-    metrics = {
+    data = {
         "MAE": [],
         "MAE_target": []
     }
 
     input_names = sorted([path.name for path in Path(dataset_ground_truth_path).iterdir()])
+    input_names = input_names[:100]
     for image_name in input_names:
         if "_rgb_" in image_name and not USE_RGB:
             continue
@@ -67,17 +68,19 @@ def predict():
         image_ground_truth = image_ground_truth.astype(np.float32)
 
         mae_image = sum(abs(image_ground_truth - prediction_resized)) / len(image_ground_truth)
-        metrics["MAE"].append(mae_image)
+        data["MAE"].append(mae_image)
         image_ground_truth_circle = cv2.bitwise_and(image_ground_truth, image_mask)
         prediction_circle = cv2.bitwise_and(prediction_resized, image_mask)
 
         mae_target = sum(abs(image_ground_truth_circle - prediction_circle)) / len(image_ground_truth_circle)
-        metrics["MAE_target"].append(mae_target)
+        data["MAE_target"].append(mae_target)
 
-    for metric in metrics.keys():
-        metrics[metric] = np.sum(metrics[metric], axis=None) / len(metrics[metric])
-        metrics[f"{metric}_norm"] = np.sum(metrics[metric], axis=None) / len(metrics[metric]) / 65536
-        metrics[f"{metric}_%"] = np.sum(metrics[metric], axis=None) / len(metrics[metric]) / 65536 * 100
+    metrics = {}
+    for metric in data.keys():
+        value = np.sum(data[metric], axis=None) / len(data[metric])
+        metrics[f"{metric}_abs"] = value
+        metrics[f"{metric}_norm"] = value / 65536
+        metrics[f"{metric}_%"] = value / 65536 * 100
 
     print(metrics)
     with open(f"{predictions_path}/info.txt", "w") as f:
