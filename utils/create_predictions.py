@@ -9,9 +9,9 @@ from sklearn.metrics import mean_squared_error
 from models.basic_model import BasicModel
 
 
-DATASET = "1_60_circle"
+DATASET = "1_20"
 USE_RGB = False
-MODEL_NAME = "epoch=40-step=201965_1_60_circle.ckpt"
+MODEL_NAME = "epoch=15-step=27311_1_20.ckpt"
 
 
 def predict():
@@ -33,7 +33,7 @@ def predict():
         albumentations.pytorch.transforms.ToTensorV2()
     ])
 
-    device = torch.device('cuda')
+    device = torch.device('cpu')
     model = BasicModel.load_from_checkpoint(model_path).to(device)
     model = model.eval()
 
@@ -43,8 +43,8 @@ def predict():
     }
 
     input_names = sorted([path.name for path in Path(dataset_ground_truth_path).iterdir()])
-    input_names = input_names[:100]
-    for image_name in input_names:
+    for i, image_name in enumerate(input_names):
+        print(f"{round(100 * i / len(input_names))}%")
         if "_rgb_" in image_name and not USE_RGB:
             continue
         image_input = cv2.imread(f"{dataset_input_path}/{image_name}")
@@ -81,6 +81,7 @@ def predict():
         metrics[f"{metric}_abs"] = value
         metrics[f"{metric}_norm"] = value / 65536
         metrics[f"{metric}_%"] = value / 65536 * 100
+        metrics[f"{metric}_m"] = value / 65535 * 4.00
 
     print(metrics)
     with open(f"{predictions_path}/info.txt", "w") as f:
