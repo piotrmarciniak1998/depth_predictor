@@ -3,3 +3,5 @@ dataset/
 temp/
 venv/
 checkpoints/
+test_dataset/
+predictions/
