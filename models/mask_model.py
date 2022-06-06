@@ -4,9 +4,9 @@ import torch
 import torchmetrics
 from fastai.vision.learner import create_unet_model
 from fastai.vision.models import resnet34
-
-
-class BasicModel(pl.LightningModule):
+from piqa import ssim
+import cv2
+class MaskModel(pl.LightningModule):
     def __init__(self):
         super().__init__()
         self.img_size = (240, 320)
@@ -14,6 +14,7 @@ class BasicModel(pl.LightningModule):
         model = create_unet_model(encoder_model, n_out=1, img_size=self.img_size, n_in=1)
         self.network = model
         self.loss_function = torch.nn.L1Loss()
+
 #MAE SSIM
         # metrics = torchmetrics.MetricCollection([
         #     torchmetrics.Precision(num_classes=4, average="macro", mdmc_average="samplewise"),
@@ -23,33 +24,32 @@ class BasicModel(pl.LightningModule):
         # ])
         # self.train_metrics = metrics.clone("train_")
         # self.val_metrics = metrics.clone("val_")
+    def weighted_loss(self, output, ground_truth, mask):
+        print(output.shape)
+        print(mask.shape)
+        print(ground_truth.shape)
+        return 0
 
     def forward(self, x):
         x = x.type(torch.float32)
         return self.network(x)
-        # return torch.permute(self.network(x), (0, 2, 3, 1))
-
     def training_step(self, batch, batch_idx):
-        input_image, ground_truth = batch
+        input_image, ground_truth, mask = batch
+
         output_image = self(input_image)
+        # loss = self.loss_function(output_image, ground_truth)
 
-        loss = self.loss_function(output_image, ground_truth)
+        loss = self.weighted_loss(output_image, ground_truth, mask)
         self.log("train_loss", loss)
-
-        # output_image = torch.softmax(output_image, dim=1)
-        # self.log_dict(self.train_metrics(output_image, ground_truth))
-
         return loss
 
     def validation_step(self, batch, batch_idx):
-        input_image, ground_truth = batch
+        input_image, ground_truth, mask = batch
+        # split_input = torch.chunk(input_image, 2, dim=1)
         output_image = self(input_image)
-
-        loss = self.loss_function(output_image, ground_truth)
+        loss = self.weighted_loss(output_image, ground_truth,mask)
+        # loss = self.loss_function(output_image, ground_truth)
         self.log("val_loss", loss, prog_bar=True)
-
-        # output_image = torch.softmax(output_image, dim=1)
-        # self.log_dict(self.train_metrics(output_image, ground_truth))
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=1e-3)
