@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 
-DATASET = "1_60_circle"
+DATASET = "real"
 NUMBER_OF_PREDICTIONS = None
 
 

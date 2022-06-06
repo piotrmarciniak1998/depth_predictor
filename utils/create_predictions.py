@@ -9,17 +9,21 @@ from sklearn.metrics import mean_squared_error
 from models.basic_model import BasicModel
 
 
-DATASET = "1_20"
+DATASET = "real"
 USE_RGB = False
-MODEL_NAME = "epoch=15-step=27311_1_20.ckpt"
+MODEL_NAME = "epoch=24-step=167874_1_80.ckpt"
+REAL = True
 
 
 def predict():
     abs_path = os.path.abspath("../")
-    dataset_path = f"{abs_path}/test_dataset/{DATASET}"
-    dataset_ground_truth_path = f"{dataset_path}/ground_truth"
-    dataset_input_path = f"{dataset_path}/input"
-    dataset_masks_path = f"{dataset_path}/masks"
+    if REAL:
+        dataset_input_path = f"{abs_path}/real_dataset/depth"
+    else:
+        dataset_path = f"{abs_path}/test_dataset/{DATASET}"
+        dataset_ground_truth_path = f"{dataset_path}/ground_truth"
+        dataset_input_path = f"{dataset_path}/input"
+        dataset_masks_path = f"{dataset_path}/masks"
     predictions_path = f"{abs_path}/predictions/{DATASET}"
     predictions_output_path = f"{predictions_path}/output"
     predictions_concatenated_path = f"{predictions_path}/concatenated"
@@ -42,51 +46,57 @@ def predict():
         "MAE_target": []
     }
 
-    input_names = sorted([path.name for path in Path(dataset_ground_truth_path).iterdir()])
+    input_names = sorted([path.name for path in Path(dataset_input_path).iterdir()])
     for i, image_name in enumerate(input_names):
         print(f"{round(100 * i / len(input_names))}%")
         if "_rgb_" in image_name and not USE_RGB:
             continue
-        image_input = cv2.imread(f"{dataset_input_path}/{image_name}")
-        image_ground_truth = cv2.imread(f"{dataset_ground_truth_path}/{image_name}")
-        image_mask = cv2.imread(f"{dataset_masks_path}/{image_name}")
 
+        image_input = cv2.imread(f"{dataset_input_path}/{image_name}")
         input = input_transforms(image=image_input)['image'][None, ...]
+
+        if not REAL:
+            image_ground_truth = cv2.imread(f"{dataset_ground_truth_path}/{image_name}")
+            image_mask = cv2.imread(f"{dataset_masks_path}/{image_name}")
+
+
         with torch.no_grad():
             prediction = model(input.to(device)).cpu().squeeze().numpy()
 
         cv2.imwrite(f"{predictions_output_path}/{image_name}", prediction)
 
-        prediction_resized = cv2.resize(prediction, (640, 480))
-        image_concatenated = np.concatenate((image_input, prediction_resized, image_ground_truth), axis=1)
+        if not REAL:
+            prediction_resized = cv2.resize(prediction, (640, 480))
+            image_concatenated = np.concatenate((image_input, prediction_resized, image_ground_truth), axis=1)
 
-        cv2.imwrite(f"{predictions_concatenated_path}/{image_name}", image_concatenated)
-        prediction_resized = cv2.cvtColor(prediction_resized, cv2.COLOR_BGR2GRAY)
-        image_ground_truth = cv2.cvtColor(image_ground_truth, cv2.COLOR_BGR2GRAY)
-        image_mask = cv2.cvtColor(image_mask, cv2.COLOR_BGR2GRAY)
-        image_mask = image_mask.astype(np.float32)
-        image_ground_truth = image_ground_truth.astype(np.float32)
+            cv2.imwrite(f"{predictions_concatenated_path}/{image_name}", image_concatenated)
+            prediction_resized = cv2.cvtColor(prediction_resized, cv2.COLOR_BGR2GRAY)
+            image_ground_truth = cv2.cvtColor(image_ground_truth, cv2.COLOR_BGR2GRAY)
+            image_mask = cv2.cvtColor(image_mask, cv2.COLOR_BGR2GRAY)
+            image_mask = image_mask.astype(np.float32)
+            image_ground_truth = image_ground_truth.astype(np.float32)
 
-        mae_image = sum(abs(image_ground_truth - prediction_resized)) / len(image_ground_truth)
-        data["MAE"].append(mae_image)
-        image_ground_truth_circle = cv2.bitwise_and(image_ground_truth, image_mask)
-        prediction_circle = cv2.bitwise_and(prediction_resized, image_mask)
+            mae_image = sum(abs(image_ground_truth - prediction_resized)) / len(image_ground_truth)
+            data["MAE"].append(mae_image)
+            image_ground_truth_circle = cv2.bitwise_and(image_ground_truth, image_mask)
+            prediction_circle = cv2.bitwise_and(prediction_resized, image_mask)
 
-        mae_target = sum(abs(image_ground_truth_circle - prediction_circle)) / len(image_ground_truth_circle)
-        data["MAE_target"].append(mae_target)
+            mae_target = sum(abs(image_ground_truth_circle - prediction_circle)) / len(image_ground_truth_circle)
+            data["MAE_target"].append(mae_target)
 
-    metrics = {}
-    for metric in data.keys():
-        value = np.sum(data[metric], axis=None) / len(data[metric])
-        metrics[f"{metric}_abs"] = value
-        metrics[f"{metric}_norm"] = value / 65536
-        metrics[f"{metric}_%"] = value / 65536 * 100
-        metrics[f"{metric}_m"] = value / 65535 * 4.00
+    if not REAL:
+        metrics = {}
+        for metric in data.keys():
+            value = np.sum(data[metric], axis=None) / len(data[metric])
+            metrics[f"{metric}_abs"] = value
+            metrics[f"{metric}_norm"] = value / 65536
+            metrics[f"{metric}_%"] = value / 65536 * 100
+            metrics[f"{metric}_m"] = value / 65535 * 4.00
 
-    print(metrics)
-    with open(f"{predictions_path}/info.txt", "w") as f:
-        for metric in metrics.keys():
-            f.write(f"{metric}: {metrics[metric]}\n")
+        print(metrics)
+        with open(f"{predictions_path}/info.txt", "w") as f:
+            for metric in metrics.keys():
+                f.write(f"{metric}: {metrics[metric]}\n")
 
 
 if __name__ == '__main__':
