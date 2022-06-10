@@ -24,21 +24,17 @@ class MaskModel(pl.LightningModule):
         # ])
         # self.train_metrics = metrics.clone("train_")
         # self.val_metrics = metrics.clone("val_")
-    def weighted_loss(self, output, ground_truth, mask):
-        print(output.shape)
-        print(mask.shape)
-        print(ground_truth.shape)
-        return 0
+    def weighted_loss(self, input, output, mask, w1=0.90, w2=0.10, criterion=torch.nn.L1Loss()):
+        loss = criterion(input * mask, output * mask) * w1 + criterion(input * (1 - mask), output * (1 - mask)) * w2
+        return loss
 
     def forward(self, x):
         x = x.type(torch.float32)
         return self.network(x)
     def training_step(self, batch, batch_idx):
         input_image, ground_truth, mask = batch
-
         output_image = self(input_image)
         # loss = self.loss_function(output_image, ground_truth)
-
         loss = self.weighted_loss(output_image, ground_truth, mask)
         self.log("train_loss", loss)
         return loss
